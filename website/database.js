@@ -24,12 +24,7 @@ let db = new sqlite3.Database('./db/poetry.db', (err) => {  //note to self, it c
     }
 });
 
-db.close((err) => {
-    if(err){
-        return console.error(err.message);
-    }
-    console.log("Closed the database connection.");
-});
+
 
 
 module.exports = db;

@@ -1,6 +1,8 @@
+const { response } = require("express");
 var express = require("express");
-const db = require("./database");
+const db = require("./database.js");
 var app = express();
+app.use(express.json());
 
 var HTTP_PORT = 8000;
 
@@ -14,6 +16,11 @@ app.get("/", (req, res, next) => {
     res.json({"message":"OK"})
 });
 
+/*app.post("/", (req, res, next) => {
+    console.log(req.body.id);
+    res.send(req.body);
+})*/
+
 
 //returns a random poem
 app.get("/poem/random", (req, res, next) => {
@@ -26,7 +33,7 @@ app.get("/poem/random", (req, res, next) => {
         }
         res.json({
             "message":"succes",
-            "data":roww
+            "data":row
         })
     })
 });
@@ -65,24 +72,51 @@ app.get("/poem/:id", (req, res, next) =>{
 
 //remove a poem by id
 app.delete("/poem/delete:id", (req, res, next) =>{
-    //for admin view only
+    var sql = "DELETE FROM poems WHERE id = ?";
+    var params = [req.params.id]
+    db.run(sql, params, function(err, result){
+        if(err){
+            res.status(400).json({"error":res.message})
+            return;
+        }
+        res.json({
+            "message":"deleted",
+            "changes":this.changes
+        })
+    });
 });
 
 //adds a poem
 app.post("/poem/add", (req, res , next) =>{
-    var sql = "INSERT INTO poems (author, poem) VALUES (?, ?)"
+    var sql = "INSERT INTO poems (author, poem) VALUES (?, ?)";
+    var params = [req.body.author, req.body.poem];
 
     db.run(sql, params, function (err, result){
         if(err){
             res.status(400).json({"error":err.message});
             return;
         }
-        res.json({})
+        res.json({
+            "message":"sucess",
+            "changes":this.changes
+        })
     })
 });
 
 //displays all authors
 app.get("/author/all", (req, res, next) => {
+    var sql = "SELECT author FROM poems";
+    var params = [];
+    db.all(sql, params, (err, rows) =>{
+        if(err){
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+    })
 
 });
 
